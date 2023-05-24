@@ -1,10 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import Task from './../Task'
+import { Observable } from 'rxjs';
 
-interface Task {
-  id: number,
-  title: string,
-  done: boolean
-}
+import {TasksSchedulerService} from './../tasks-scheduler.service';
 
 @Component({
   selector: 'app-todolist',
@@ -12,23 +10,40 @@ interface Task {
   styleUrls: ['./todolist.component.css']
 })
 
-export class TodolistComponent {
-  idForTask: number = 4;
-  idForUncompletedTask: number = 1;
-  tasks: Task[] = [{id: 1, title: 'Task 1', done: false}, {id: 2, title: 'Task 2', done: false}, {id: 3, title: 'Task 3', done: false}]
-  completedTasks: Task[] = [];
+export class TodolistComponent implements OnInit {
+  tasks : Task[] = this.taskService.getTaskList()
+  completedTasks : Task[] = this.taskService.getCompletedTasksList();
 
   showEdit: boolean = false;
   editTaskId: number | undefined = undefined;
   editTaskTitle: string = "";
 
-  createTask(title: string) {
-    this.tasks.push({id: ++this.idForTask, title: title, done: false});
+  constructor(private taskService: TasksSchedulerService){}
+  ngOnInit(): void {
+    // this.completedTasks = this.taskService.getCompletedTasksList();
   }
 
+  createTask(title: string){
+    this.taskService.createTask(title)
+  }
+
+  completeTask(id: number){
+    this.taskService.completeTask(id);
+    this.tasks = this.taskService.getTaskList()
+    
+  }
+  
   deleteTask(id: number){
     console.log('clicked delete for ', id);
-    this.tasks = this.tasks.filter((task) => task.id !== id);
+    this.taskService.deleteTask(id)
+  }
+
+  moveTaskToUncomplete(id: number){
+    this.taskService.moveTaskToUncomplete(id);
+  }
+
+  deleteCompletedTask(id: number){
+    this.taskService.deleteCompletedTask(id);
   }
 
   updateTaskTitle(newTitle: string){
@@ -43,17 +58,12 @@ export class TodolistComponent {
     // you need to update the task with a particular id, not a particular index
     // so this approach would not work in general
 
-    this.tasks.map((task) => {
-      if(task.id === this.editTaskId){
-        task.title = newTitle;
-      }
-    })
-
+    this.taskService.editTaskTitle(this.editTaskId, newTitle);
     this.showEdit = false;
     console.log('successfully updated title');
   }
 
-  editTask(id: number | undefined, title: string){
+  showEditTaskForm(id: number | undefined, title: string){
     console.log('edit id function called for id', id);
 
     if(id === undefined){
@@ -67,36 +77,5 @@ export class TodolistComponent {
 
     // this.tasks[this.editTaskId].title = newTitle;
   }
-
-  completeTask(id: number){
-    const task: Task | undefined = this.tasks.find((task) => task.id === id);
-    if(task === undefined){
-      window.alert('the task does not exist. Something went wrong.');
-      return;
-    }
-
-    this.deleteTask(task.id);
-    this.createCompletedTask(task.title)
-  }
-
-  createCompletedTask(title: string){
-    this.completedTasks.push({id: ++this.idForUncompletedTask, title: title, done: true});
-  }
-
-  moveTaskToUncomplete(id: number){
-    const task: Task | undefined = this.completedTasks.find((task) => task.id === id);
-    if(task === undefined){
-      window.alert('the task does not exist. Something went wrong.');
-      return;
-    }
-
-    this.deleteCompletedTask(task.id);
-    this.createTask(task.title)
-  }
-
-  deleteCompletedTask(id: number){
-    this.completedTasks = this.completedTasks.filter((task) => task.id !== id);
-  }
-
 
 }
