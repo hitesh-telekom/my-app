@@ -1,6 +1,9 @@
 <div>
     <input type="text" name="title" class="item" #item> 
     <button class="btn-add-item" (click)="createTask(item.value)">Add</button>
+    
+    <!-- <button class="btn-add-item" (click)="createRandomTask()">Generate Random Task</button> -->
+
 
     <div *ngIf="showEdit">
         <input type="text" name="newTitle" class="title" value="{{editTaskTitle}}" #title> 
@@ -13,7 +16,7 @@
         <li *ngFor="let task of tasks">
             <span>{{task.title}}</span>
 
-            <button (click)="editTask(task.id, task.title)">
+            <button (click)="showEditTaskForm(task.id, task.title)">
                 Edit
             </button>
             <button (click)="completeTask(task.id)">
